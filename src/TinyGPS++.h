@@ -25,9 +25,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef __TinyGPSPlus_h
 #define __TinyGPSPlus_h
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <inttypes.h>
-#include "Arduino.h"
 #include <limits.h>
 
 #define _GPS_VERSION "1.1.0" // software version of this library
@@ -39,6 +40,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define _GPS_FEET_PER_METER 3.2808399
 #define _GPS_MAX_FIELD_SIZE 15
 #define _GPS_EARTH_MEAN_RADIUS 6371009 // old: 6372795
+
+unsigned long millis();
 
 struct RawDegrees
 {

@@ -20,27 +20,41 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
+#include "FreeRTOS.h"
+#include "task.h"
 #include "TinyGPS++.h"
 
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-
+#include <math.h>
 #define _RMCterm "RMC"
 #define _GGAterm "GGA"
-
+#define TWO_PI 6.283185307179586
 #if !defined(ARDUINO) && !defined(__AVR__)
 // Alternate implementation of millis() that relies on std
 unsigned long millis()
 {
-    static auto start_time = std::chrono::high_resolution_clock::now();
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-
-    return static_cast<unsigned long>(duration.count());
+    static TickType_t startTicks = xTaskGetTickCount();
+    TickType_t currentTicks = xTaskGetTickCount();
+    
+    // Convert ticks to milliseconds (assuming configTICK_RATE_HZ is set to 1000)
+    // If configTICK_RATE_HZ is different, adjust the multiplication accordingly
+    return (unsigned long)((currentTicks - startTicks) * (1000 / configTICK_RATE_HZ));
 }
+
+double radians(double degrees) {
+    return degrees * (M_PI / 180.0);
+}
+
+double sq(double x) {
+    return x * x;
+} 
+
+double degrees(double radians) {
+    return radians * (180.0 / M_PI);
+}
+
 #endif
 
 TinyGPSPlus::TinyGPSPlus()
@@ -172,7 +186,7 @@ bool TinyGPSPlus::endOfTermHandler()
   // If it's the checksum term, and the checksum checks out, commit
   if (isChecksumTerm)
   {
-    byte checksum = 16 * fromHex(term[0]) + fromHex(term[1]);
+    uint8_t checksum = 16 * fromHex(term[0]) + fromHex(term[1]);
     if (checksum == parity)
     {
       passedChecksumCount++;
